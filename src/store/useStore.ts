@@ -18,6 +18,12 @@ if (opfsWorker) {
   };
 }
 
+export interface MediaMetadata {
+  duration: number;
+  width: number;
+  height: number;
+}
+
 export interface MediaItem {
   id: string;
   name: string;
@@ -26,6 +32,8 @@ export interface MediaItem {
   status: 'pending' | 'uploading' | 'ready' | 'error';
   file?: File; // Store the original file temporarily before OPFS transfer
   opfsFileName?: string;
+  metadata?: MediaMetadata;
+  proxyStatus?: 'none' | 'generating' | 'ready';
 }
 
 interface ProjectState {
@@ -33,6 +41,8 @@ interface ProjectState {
   addMedia: (item: MediaItem) => void;
   removeMedia: (id: string) => void;
   updateMediaStatus: (id: string, status: MediaItem['status'], opfsFileName?: string) => void;
+  updateMediaMetadata: (id: string, metadata: MediaMetadata) => void;
+  generateProxy: (id: string) => void;
 }
 
 export const useStore = create<ProjectState>((set) => ({
@@ -67,4 +77,20 @@ export const useStore = create<ProjectState>((set) => ({
         m.id === id ? { ...m, status, opfsFileName } : m
       ),
     })),
+  updateMediaMetadata: (id, metadata) =>
+    set((state) => ({
+      mediaPool: state.mediaPool.map((m) =>
+        m.id === id ? { ...m, metadata, proxyStatus: 'none' } : m
+      ),
+    })),
+  generateProxy: (id) =>
+    set((state) => {
+      // Skeleton function for WebCodecs Proxy routing
+      console.log(`[Proxy generation started] Routing media ${id} to WebCodecs Decoder...`);
+      return {
+        mediaPool: state.mediaPool.map((m) =>
+          m.id === id ? { ...m, proxyStatus: 'generating' } : m
+        ),
+      };
+    }),
 }));
