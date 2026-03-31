@@ -34,10 +34,10 @@ Based on the `docs/PLAN.md` specification and the constraints from `AGENTS.md` (
 * **Sub-phase 3.1: WebCodecs Demuxing & Decoding (Completed)**
   * **Tasks**: Read streams from OPFS. Implement an MP4/WebM demuxer (e.g., MP4Box.js or Rust-based). Pass encoded chunks to `WebCodecs VideoDecoder`.
   * **Quality Gate**: VideoDecoder successfully emits raw `VideoFrame` objects continuously from the OPFS media file.
-* **Sub-phase 3.2: 32-bit WebGL & OffscreenCanvas Setup (In Progress)**
+* **Sub-phase 3.2: 32-bit WebGL & OffscreenCanvas Setup (Completed)**
   * **Tasks**: Transfer an `OffscreenCanvas` from the Program Monitor React component to the Render Worker. Initialize a WebGL 2.0 context explicitly requiring half-float or float texture extensions.
   * **Quality Gate**: WebGL shader successfully clears the OffscreenCanvas to a specific test color triggered by a UI button.
-* **Sub-phase 3.3: Frame Rendering & Playback Loop**
+* **Sub-phase 3.3: Frame Rendering & Playback Loop (In Progress)**
   * **Tasks**: Bind decoded `VideoFrame` objects to WebGL textures and draw them to the canvas synchronized with a `requestAnimationFrame` loop.
   * **Quality Gate**: Load an OPFS video, press Play in the UI, and verify the Program Monitor outputs frames continuously and smoothly at the target framerate (e.g., 30fps) without audio drift.
 
