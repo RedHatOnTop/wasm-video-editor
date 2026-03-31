@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { useStore } from '../store/useStore';
 import { calculateRippleEdit, calculateRollingEdit } from '../utils/editMath';
+import { MousePointer2, MoveHorizontal, Scissors, ArrowRightLeft } from 'lucide-react';
 
 export default function TimelinePanel() {
   const { project, activeSequenceId, debugLogTimelineState, addClipToTrack, updateTrackClips } = useStore();
@@ -162,32 +163,32 @@ export default function TimelinePanel() {
           <span>Timeline {activeSequence ? `- ${activeSequence.name}` : ''}</span>
           <div className="flex border border-[#333] rounded overflow-hidden">
             <button 
-              className={`px-2 py-0.5 ${activeTool === 'selection' ? 'bg-[#3b82f6] text-white' : 'hover:bg-[#333] text-gray-400'}`}
+              className={`px-2 py-0.5 flex items-center justify-center ${activeTool === 'selection' ? 'bg-[#3b82f6] text-white' : 'hover:bg-[#333] text-gray-400'}`}
               onClick={() => setActiveTool('selection')}
               title="Selection Tool"
             >
-              ⮩
+              <MousePointer2 size={14} />
             </button>
             <button 
-              className={`px-2 py-0.5 ${activeTool === 'ripple' ? 'bg-[#eab308] text-white' : 'hover:bg-[#333] text-gray-400'}`}
+              className={`px-2 py-0.5 flex items-center justify-center ${activeTool === 'ripple' ? 'bg-[#eab308] text-white' : 'hover:bg-[#333] text-gray-400'}`}
               onClick={() => setActiveTool('ripple')}
               title="Ripple Edit (Yellow)"
             >
-              ⇹
+              <ArrowRightLeft size={14} />
             </button>
             <button 
-              className={`px-2 py-0.5 ${activeTool === 'rolling' ? 'bg-[#ef4444] text-white' : 'hover:bg-[#333] text-gray-400'}`}
+              className={`px-2 py-0.5 flex items-center justify-center ${activeTool === 'rolling' ? 'bg-[#ef4444] text-white' : 'hover:bg-[#333] text-gray-400'}`}
               onClick={() => setActiveTool('rolling')}
               title="Rolling Edit (Red)"
             >
-              ⤄
+              <MoveHorizontal size={14} />
             </button>
             <button 
-              className={`px-2 py-0.5 ${activeTool === 'razor' ? 'bg-[#a855f7] text-white' : 'hover:bg-[#333] text-gray-400'}`}
+              className={`px-2 py-0.5 flex items-center justify-center ${activeTool === 'razor' ? 'bg-[#a855f7] text-white' : 'hover:bg-[#333] text-gray-400'}`}
               onClick={() => setActiveTool('razor')}
               title="Razor Tool"
             >
-              ✂
+              <Scissors size={14} />
             </button>
           </div>
         </div>
