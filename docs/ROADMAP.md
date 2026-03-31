@@ -47,7 +47,7 @@ Based on the `docs/PLAN.md` specification and the constraints from `AGENTS.md` (
 * **Sub-phase 4.1: Timeline Data Architecture (Completed)**
   * **Tasks**: Implement the JSON graph state in Zustand (`Project` -> `Sequences` -> `Tracks` -> `Clips`). Add parameters for `trimIn`, `trimOut`, and `trackStart`.
   * **Quality Gate**: Console logging the Zustand state reveals a perfectly nested data structure capable of supporting multiple tracks and clips.
-* **Sub-phase 4.2: Timeline UI Rendering & Interaction**
+* **Sub-phase 4.2: Timeline UI Rendering & Interaction (Completed)**
   * **Tasks**: Render Timeline tracks visually based on Zustand state. Implement Drag-and-Drop to place clips from Project Bin onto Tracks. Implement basic snap-to-grid/snap-to-clip mechanics.
   * **Quality Gate**: User dragging an asset into the timeline creates a visual block at the exact timestamp where the mouse was released, correctly updating the Zustand tree.
 * **Sub-phase 4.3: Ripple & Rolling Edit Algorithms**
