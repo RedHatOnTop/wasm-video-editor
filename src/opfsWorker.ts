@@ -20,7 +20,7 @@ self.onmessage = async (event: MessageEvent<OPFSMessagePayload>) => {
       const fileHandle = await mediaDir.getFileHandle(fileName, { create: true });
       
       // 5. Read the file as a stream so we don't block memory for huge videos
-      const accessHandle = await fileHandle.createSyncAccessHandle();
+      const accessHandle = await (fileHandle as unknown as { createSyncAccessHandle: () => Promise<{ write: (data: ArrayBufferView, options: { at: number }) => number, flush: () => void, close: () => void }> }).createSyncAccessHandle();
       const reader = file.stream().getReader();
       
       let offset = 0;

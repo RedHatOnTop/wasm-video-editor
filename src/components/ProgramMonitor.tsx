@@ -1,13 +1,15 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { renderMessageChannel } from '../store/useStore';
 
 export default function ProgramMonitor() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const workerRef = useRef<Worker | null>(null);
-  const [renderStatus, setRenderStatus] = useState<'pending' | 'ready' | 'error'>('pending');
+  const setupDoneRef = useRef(false);
+  const [renderStatus, setRenderStatus] = useState<'pending' | 'ready' | 'error'>('pending'); 
 
   useEffect(() => {
-    if (!canvasRef.current) return;
+    if (!canvasRef.current || setupDoneRef.current) return;
+    setupDoneRef.current = true;
 
     // Transfer control of the canvas to a Web Worker
     const offscreen = canvasRef.current.transferControlToOffscreen();

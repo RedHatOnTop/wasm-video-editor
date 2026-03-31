@@ -1,6 +1,7 @@
-import React, { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import ProjectPanel from './components/ProjectPanel';
 import ProgramMonitor from './components/ProgramMonitor';
+import TimelinePanel from './components/TimelinePanel';
 
 function App() {
   const [wasmStatus, setWasmStatus] = useState<'pending' | 'ready' | 'error'>('pending');
@@ -72,12 +73,7 @@ function App() {
         <ProjectPanel />
 
         {/* Bottom Right: Timeline Panel */}
-        <div className="flex-1 bg-[var(--color-nle-panel)] flex flex-col">
-          <div className="px-3 py-1 border-b border-[var(--color-nle-border)] text-xs font-semibold bg-[#1a1a1a]">Timeline</div>
-          <div className="flex-1 p-2 flex items-center justify-center text-[var(--color-nle-text-muted)]">
-            Tracks & Clips
-          </div>
-        </div>
+        <TimelinePanel />
       </div>
     </div>
   );

@@ -1,4 +1,5 @@
-import MP4Box, { MP4ArrayBuffer, MP4File, MP4Info, MP4Sample } from 'mp4box';
+import * as MP4Box from 'mp4box';
+import type { MP4ArrayBuffer, MP4File, MP4Info, MP4Sample } from 'mp4box';
 
 export interface DecoderMessagePayload {
   type: 'START_DECODE' | 'INIT_RENDER_PORT';
@@ -82,39 +83,21 @@ function demuxAndDecode(file: File, id: string) {
       }
     });
 
-    // In mp4box.js, the description box holds the avcC/hvcC info for the decoder
-    const description = videoTrack.codec; // e.g., 'avc1.42E01E'
-    let avcDecoderConfigRecord: Uint8Array | undefined = undefined;
-    
-    // Attempt to extract the avcC box (codec configuration) from the track
-    // mp4box.js exposes the raw extradata inside the 'avcC' or 'hvcC' box
-    const trak = mp4boxfile.getTrackById(trackId);
-    if (trak && trak.mdia && trak.mdia.minf && trak.mdia.minf.stbl && trak.mdia.minf.stbl.stsd) {
-        const parseBoxRow = trak.mdia.minf.stbl.stsd.entries[0];
-        if (parseBoxRow.avcC) {
-             // Create an ArrayBuffer representation of the avcC box payload if present.
-             // But actually, we only absolutely need the codec string for WebCodecs!
-             // Wait, WebCodecs sometimes needs description data. Let's start with just codec string.
-             // If needed we will manually format the AVCDecoderConfigurationRecord.
-        }
-    }
-
-    // Try basic configuration first
+// Try basic configuration first
     // Note: WebCodecs VideoDecoder.configure often needs `description` (extradata) for AVC (H.264)
     // We will extract it safely
     const extractDescription = () => {
-       const box = mp4boxfile.moov.traks.find((t:any) => t.tkhd.track_id === trackId);
+       const box = (mp4boxfile.moov as { traks: { tkhd: { track_id: number }, mdia?: { minf?: { stbl?: { stsd?: { entries: { avcC: { write: (stream: unknown) => void } }[] } } } } }[] }).traks.find((t) => t.tkhd.track_id === trackId);        
        const avcC = box?.mdia?.minf?.stbl?.stsd?.entries[0]?.avcC;
        if (avcC) {
-           const stream = new MP4Box.DataStream();
-           stream.endianness = MP4Box.DataStream.BIG_ENDIAN;
-           avcC.write(stream);
-           return new Uint8Array(stream.buffer, 8); // Skip box length and box type (avcC)
+           const stream = new (MP4Box as { DataStream: new () => { endianness: unknown, buffer: ArrayBuffer }, [key: string]: unknown }).DataStream();
+           stream.endianness = (MP4Box as { DataStream: { BIG_ENDIAN: unknown }, [key: string]: unknown }).DataStream.BIG_ENDIAN;
+           return new Uint8Array(stream.buffer, 8); // Skip box length and box type (avcC)    
        }
        return undefined;
     };
 
-    let configureDescription = extractDescription();
+    const configureDescription = extractDescription();
 
     const config: VideoDecoderConfig = {
       codec: videoTrack.codec, // e.g., "avc1.640028"
@@ -137,7 +120,7 @@ function demuxAndDecode(file: File, id: string) {
     }
   };
 
-  mp4boxfile.onSamples = (id: number, user: any, samples: MP4Sample[]) => {
+  mp4boxfile.onSamples = (id: number, _user: unknown, samples: MP4Sample[]) => {
     if (!videoDecoder || trackId !== id) return;
 
     for (const sample of samples) {
@@ -159,7 +142,6 @@ function demuxAndDecode(file: File, id: string) {
 }
 
 async function readFileStream(file: File, mp4boxfile: MP4File) {
-  const CHUNK_SIZE = 1024 * 1024 * 5; // 5MB chunks
   let offset = 0;
 
   const reader = file.stream().getReader();

@@ -38,25 +38,35 @@ declare module 'mp4box' {
     duration: number;
     timescale: number;
     is_sync: boolean;
-    description: any;
+    description: unknown;
     data: Uint8Array;
   }
 
   export interface MP4File {
     onReady: (info: MP4Info) => void;
     onError: (e: string) => void;
-    onSamples: (id: number, user: any, samples: MP4Sample[]) => void;
+    onSamples: (id: number, user: unknown, samples: MP4Sample[]) => void;
     appendBuffer: (data: MP4ArrayBuffer) => number;
-    setExtractionOptions: (id: number, user: any, options?: any) => void;
+    setExtractionOptions: (id: number, user: unknown, options?: unknown) => void;
+    getTrackById: (id: number) => unknown;
     start: () => void;
     stop: () => void;
     flush: () => void;
+    moov: unknown;
+  }
+
+  export class DataStream {
+    static BIG_ENDIAN: boolean;
+    endianness: boolean;
+    buffer: ArrayBuffer;
+    constructor();
   }
 
   export function createFile(): MP4File;
 
   const defaultExport: {
     createFile: typeof createFile;
+    DataStream: typeof DataStream;
   };
   export default defaultExport;
 }

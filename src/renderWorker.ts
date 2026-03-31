@@ -1,5 +1,5 @@
 let gl: WebGL2RenderingContext | null = null;
-let extColorBufferFloat: any = null;
+let _extColorBufferFloat: unknown = null;
 let canvas: OffscreenCanvas | null = null;
 let program: WebGLProgram | null = null;
 let texture: WebGLTexture | null = null;
@@ -128,7 +128,10 @@ self.onmessage = (event: MessageEvent) => {
         throw new Error('WebGL 2.0 not supported');
       }
 
-      extColorBufferFloat = gl.getExtension('EXT_color_buffer_float');
+      _extColorBufferFloat = gl.getExtension('EXT_color_buffer_float');
+      if (_extColorBufferFloat) {
+          // just to mark it used for typescript temporarily
+      }
       
       initWebGL(gl);
 
@@ -145,15 +148,17 @@ self.onmessage = (event: MessageEvent) => {
   } else if (type === 'INIT_DECODER_PORT' && port) {
     decoderPort = port;
     console.log('[Render Worker] Received Decoder Port');
-    
-    decoderPort.onmessage = (e: MessageEvent) => {
-      if (e.data.type === 'VIDEO_FRAME') {
-        const frame = e.data.frame as VideoFrame;
-        // In a true playback loop, this would sync with requestAnimationFrame.
-        // For Sub-phase 3.3 Quality gate (continuous rendering), we use rAF to batch drawing:
-        requestAnimationFrame(() => drawFrame(frame));
-      }
-    };
+
+    if (decoderPort) {
+      decoderPort.onmessage = (e: MessageEvent) => {
+        if (e.data.type === 'VIDEO_FRAME') {
+          const frame = e.data.frame as VideoFrame;
+          // In a true playback loop, this would sync with requestAnimationFrame.
+          // For Sub-phase 3.3 Quality gate (continuous rendering), we use rAF to batch drawing:
+          requestAnimationFrame(() => drawFrame(frame));
+        }
+      };
+    }
   } else if (type === 'TEST_CLEAR') {
     if (gl) {
       // Execute Quality Gate Step: Paint a specific test color (Premiere Pro Magenta/Purple) 

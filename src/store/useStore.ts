@@ -48,17 +48,59 @@ export interface MediaItem {
   proxyStatus?: 'none' | 'generating' | 'ready';
 }
 
-interface ProjectState {
-  mediaPool: MediaItem[];
-  addMedia: (item: MediaItem) => void;
-  removeMedia: (id: string) => void;
-  updateMediaStatus: (id: string, status: MediaItem['status'], opfsFileName?: string) => void;
-  updateMediaMetadata: (id: string, metadata: MediaMetadata) => void;
-  generateProxy: (id: string) => void;
+// ---------------------------------------------------------
+// Phase 4: Timeline Data Architecture
+// ---------------------------------------------------------
+export interface Clip {
+  id: string;
+  mediaId: string;   // Reference to MediaItem.id
+  trimIn: number;    // Start time in seconds within the source file
+  trimOut: number;   // End time in seconds within the source file
+  trackStart: number; // Start time in seconds on the timeline track
 }
 
-export const useStore = create<ProjectState>((set) => ({
+export interface Track {
+  id: string;
+  name: string;
+  type: 'video' | 'audio';
+  clips: Clip[];
+}
+
+export interface Sequence {
+  id: string;
+  name: string;
+  tracks: Track[];
+  duration: number; // For rendering the timeline grid limits
+}
+
+export interface VideoProject {
+  id: string;
+  name: string;
+  sequences: Sequence[];
+}
+
+const defaultSequence: Sequence = {
+  id: 'seq-1',
+  name: 'Sequence 01',
+  duration: 60,
+  tracks: [
+    { id: 'v2', name: 'V2', type: 'video', clips: [] },
+    { id: 'v1', name: 'V1', type: 'video', clips: [] },
+    { id: 'a1', name: 'A1', type: 'audio', clips: [] },
+    { id: 'a2', name: 'A2', type: 'audio', clips: [] },
+  ]
+};
+
+const defaultProject: VideoProject = {
+  id: 'proj-1',
+  name: 'Untitled Project',
+  sequences: [defaultSequence]
+};
+export const useStore = create<ProjectState>((set, get) => ({
   mediaPool: [],
+  project: defaultProject,
+  activeSequenceId: 'seq-1',
+
   addMedia: (item) =>
     set((state) => {
       // Prevent duplicates by name and size for now
@@ -119,4 +161,29 @@ export const useStore = create<ProjectState>((set) => ({
         ),
       };
     }),
+
+  addClipToTrack: (sequenceId, trackId, clip) =>
+    set((state) => {
+      const parentSeqIndex = state.project.sequences.findIndex(s => s.id === sequenceId);
+      if (parentSeqIndex === -1) return state;
+
+      const trackIndex = state.project.sequences[parentSeqIndex].tracks.findIndex(t => t.id === trackId);
+      if (trackIndex === -1) return state;
+
+      // Deep clone / immutable update
+      const newSequences = [...state.project.sequences];
+      const newTracks = [...newSequences[parentSeqIndex].tracks];
+      const newClips = [...newTracks[trackIndex].clips, clip];
+      
+      newTracks[trackIndex] = { ...newTracks[trackIndex], clips: newClips };
+      newSequences[parentSeqIndex] = { ...newSequences[parentSeqIndex], tracks: newTracks };
+
+      return {
+        project: { ...state.project, sequences: newSequences }
+      };
+    }),
+
+  debugLogTimelineState: () => {
+    console.log('[Quality Gate 4.1] Zustand Timeline State:', get().project);
+  }
 }));
