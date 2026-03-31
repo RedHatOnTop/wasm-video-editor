@@ -1,11 +1,23 @@
 import { useRef, useState } from 'react';
 import { useStore } from '../store/useStore';
+import { calculateRippleEdit, calculateRollingEdit } from '../utils/editMath';
 
 export default function TimelinePanel() {
-  const { project, activeSequenceId, debugLogTimelineState, addClipToTrack } = useStore();
+  const { project, activeSequenceId, debugLogTimelineState, addClipToTrack, updateTrackClips } = useStore();
 
   const activeSequence = project.sequences.find(s => s.id === activeSequenceId);
   const [draggedOverTrackId, setDraggedOverTrackId] = useState<string | null>(null);
+
+  type EditMode = 'selection' | 'ripple' | 'rolling' | 'razor';
+  const [activeTool, setActiveTool] = useState<EditMode>('selection');
+
+  const [trimState, setTrimState] = useState<{
+    trackId: string;
+    clipId: string;
+    side: 'in' | 'out';
+    startX: number;
+    initialClips: any[];
+  } | null>(null);
 
   const PIXELS_PER_SECOND = 20;
 
@@ -52,22 +64,138 @@ export default function TimelinePanel() {
       trimOut: 5,
       trackStart: 0
     });
-    // Call debug immediately after (it might log the previous state if not careful, 
+    addClipToTrack(activeSequenceId, 'v1', {
+      id: crypto.randomUUID(),
+      mediaId: 'dummy-media-id',
+      trimIn: 0,
+      trimOut: 5,
+      trackStart: 5
+    });
+    addClipToTrack(activeSequenceId, 'v1', {
+      id: crypto.randomUUID(),
+      mediaId: 'dummy-media-id',
+      trimIn: 0,
+      trimOut: 5,
+      trackStart: 10
+    });
+    
+    // Call debug immediately after (it might log the previous state if not careful,
     // but the get() inside the store function will be accurate)
     setTimeout(() => {
       debugLogTimelineState();
     }, 100);
   };
 
+  const handlePointerDown = (e: React.PointerEvent, trackId: string, clipId: string, side: 'in' | 'out') => {
+    if (activeTool !== 'ripple' && activeTool !== 'rolling') return;
+    e.stopPropagation();
+    e.currentTarget.setPointerCapture(e.pointerId);
+
+    const track = activeSequence?.tracks.find(t => t.id === trackId);
+    if (!track) return;
+
+    setTrimState({
+      trackId,
+      clipId,
+      side,
+      startX: e.clientX,
+      initialClips: JSON.parse(JSON.stringify(track.clips)) // deep clone for math
+    });
+  };
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (!trimState || !activeSequenceId) return;
+
+    const deltaX = e.clientX - trimState.startX;
+    const deltaSeconds = deltaX / PIXELS_PER_SECOND;
+
+    if (activeTool === 'ripple') {
+      const newClips = calculateRippleEdit(
+        trimState.initialClips,
+        trimState.clipId,
+        deltaSeconds,
+        trimState.side
+      );
+      updateTrackClips(activeSequenceId, trimState.trackId, newClips);
+    } else if (activeTool === 'rolling') {
+      // Find the adjacent clip.
+      const clips = trimState.initialClips;
+      const targetIndex = clips.findIndex(c => c.id === trimState.clipId);
+      if (targetIndex === -1) return;
+
+      if (trimState.side === 'out' && targetIndex < clips.length - 1) {
+        const rightClipId = clips[targetIndex + 1].id;
+        const newClips = calculateRollingEdit(
+          trimState.initialClips,
+          trimState.clipId,
+          rightClipId,
+          deltaSeconds
+        );
+        updateTrackClips(activeSequenceId, trimState.trackId, newClips);
+      } else if (trimState.side === 'in' && targetIndex > 0) {
+         const leftClipId = clips[targetIndex - 1].id;
+         // Moving an 'in' point to the right means deltaSeconds > 0 for this interaction,
+         // but from the viewpoint of the rolling edit, adjusting the PREVIOUS clip's OUT point,
+         // the previous clip gets longer (delta > 0).
+         const newClips = calculateRollingEdit(
+           trimState.initialClips,
+           leftClipId,
+           trimState.clipId,
+           deltaSeconds
+         );
+         updateTrackClips(activeSequenceId, trimState.trackId, newClips);
+      }
+    }
+  };
+
+  const handlePointerUp = (e: React.PointerEvent) => {
+    if (trimState) {
+      e.currentTarget.releasePointerCapture(e.pointerId);
+      setTrimState(null);
+    }
+  };
+
   return (
     <div className="flex-1 bg-[var(--color-nle-panel)] flex flex-col overflow-hidden relative">
-      <div className="px-3 py-1 border-b border-[var(--color-nle-border)] text-xs font-semibold bg-[#1a1a1a] flex justify-between items-center z-10">
-        <span>Timeline {activeSequence ? `- ${activeSequence.name}` : ''}</span>
+      <div className="px-3 py-1 border-b border-[var(--color-nle-border)] text-xs font-semibold bg-[#1a1a1a] flex justify-between items-center z-10 w-full">
+        <div className="flex items-center gap-4">
+          <span>Timeline {activeSequence ? `- ${activeSequence.name}` : ''}</span>
+          <div className="flex border border-[#333] rounded overflow-hidden">
+            <button 
+              className={`px-2 py-0.5 ${activeTool === 'selection' ? 'bg-[#3b82f6] text-white' : 'hover:bg-[#333] text-gray-400'}`}
+              onClick={() => setActiveTool('selection')}
+              title="Selection Tool"
+            >
+              ⮩
+            </button>
+            <button 
+              className={`px-2 py-0.5 ${activeTool === 'ripple' ? 'bg-[#eab308] text-white' : 'hover:bg-[#333] text-gray-400'}`}
+              onClick={() => setActiveTool('ripple')}
+              title="Ripple Edit (Yellow)"
+            >
+              ⇹
+            </button>
+            <button 
+              className={`px-2 py-0.5 ${activeTool === 'rolling' ? 'bg-[#ef4444] text-white' : 'hover:bg-[#333] text-gray-400'}`}
+              onClick={() => setActiveTool('rolling')}
+              title="Rolling Edit (Red)"
+            >
+              ⤄
+            </button>
+            <button 
+              className={`px-2 py-0.5 ${activeTool === 'razor' ? 'bg-[#a855f7] text-white' : 'hover:bg-[#333] text-gray-400'}`}
+              onClick={() => setActiveTool('razor')}
+              title="Razor Tool"
+            >
+              ✂
+            </button>
+          </div>
+        </div>
         <button
           onClick={handleTestAddClip}
           className="px-2 py-0.5 bg-[var(--color-nle-accent)] hover:bg-[var(--color-nle-accent-hover)] text-white rounded text-[10px]"
         >
-          [QG 4.1] Test & Log
+          [QG 4.3] Test Layout
         </button>
       </div>
       
@@ -97,15 +225,26 @@ export default function TimelinePanel() {
                    {track.clips.map(clip => (
                      <div
                         key={clip.id}
-                        className="absolute h-full rounded border border-black p-1 text-[10px] truncate"
+                        className="absolute h-full rounded border border-black p-1 text-[10px] truncate group select-none"
                         style={{
-                           // Sub-phase 4.2 placeholder math: 1 second = 20px   
-                           left: `${clip.trackStart * PIXELS_PER_SECOND}px`,
-                           width: `${(clip.trimOut - clip.trimIn) * PIXELS_PER_SECOND}px`,     
-                           backgroundColor: track.type === 'video' ? '#3b82f6' : '#10b981' // blue for video, green for audio 
+                           left: `${clip.trackStart * PIXELS_PER_SECOND}px`,    
+                           width: `${(clip.trimOut - clip.trimIn) * PIXELS_PER_SECOND}px`,
+                           backgroundColor: track.type === 'video' ? '#3b82f6' : '#10b981' // blue for video, green for audio
                         }}
                      >
-                       Clip ({clip.trimOut - clip.trimIn}s)
+                       <div className="absolute inset-y-0 left-0 w-2 cursor-ew-resize hover:bg-white/30" 
+                            onPointerDown={e => handlePointerDown(e, track.id, clip.id, 'in')}
+                            onPointerMove={handlePointerMove}
+                            onPointerUp={handlePointerUp}
+                       />
+                       <div className="pl-2 pr-2 whitespace-nowrap overflow-hidden z-10 pointer-events-none">
+                         Clip ({Math.round(clip.trimOut - clip.trimIn)}s)
+                       </div>
+                       <div className="absolute inset-y-0 right-0 w-2 cursor-ew-resize hover:bg-white/30"
+                            onPointerDown={e => handlePointerDown(e, track.id, clip.id, 'out')}
+                            onPointerMove={handlePointerMove}
+                            onPointerUp={handlePointerUp}
+                       />
                      </div>
                    ))}
                 </div>
