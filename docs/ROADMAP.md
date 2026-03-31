@@ -21,7 +21,7 @@ Based on the `docs/PLAN.md` specification and the constraints from `AGENTS.md` (
 * **Sub-phase 2.1: Drag & Drop UI & Core React State (Completed)**
   * **Tasks**: Implement file drop zone in the Project Bin component. Map dropped `File` objects to the Zustand MediaPool state.
   * **Quality Gate**: Dropping a file updates the Zustand state and reflects the filename visually in the Project Bin UI.
-* **Sub-phase 2.2: OPFS Storage Pipeline**
+* **Sub-phase 2.2: OPFS Storage Pipeline (In Progress)**
   * **Tasks**: Create OPFS directory structure. Implement `FileSystemSyncAccessHandle` inside a Web Worker to stream file buffers into persistent browser storage.
   * **Quality Gate**: Dropping a video file >100MB successfully streams it to OPFS within seconds without freezing the UI.
 * **Sub-phase 2.3: Metadata Extraction & Proxy Generation Routing**

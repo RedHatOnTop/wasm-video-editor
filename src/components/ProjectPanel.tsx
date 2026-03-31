@@ -64,9 +64,15 @@ export default function ProjectPanel() {
                 key={item.id}
                 className="text-xs p-2 bg-[#2d2d30] border border-[var(--color-nle-border)] rounded flex justify-between items-center cursor-pointer hover:bg-[#3d3d40]"
               >
-                <span className="truncate flex-1 font-medium" title={item.name}>
-                  {item.name}
-                </span>
+                <div className="flex flex-col flex-1 overflow-hidden">
+                  <span className="truncate font-medium" title={item.name}>
+                    {item.name}
+                  </span>
+                  <span className="text-[10px] text-[var(--color-nle-text-muted)] mt-0.5">
+                    {item.status === 'uploading' ? 'Importing to OPFS...' : 
+                     item.status === 'error' ? 'Import Failed' : 'Ready'}
+                  </span>
+                </div>
                 <span className="text-[10px] text-gray-400 ml-2 whitespace-nowrap">
                   {(item.size / 1024 / 1024).toFixed(2)} MB
                 </span>
