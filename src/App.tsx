@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import ProjectPanel from './components/ProjectPanel';
 
 function App() {
   const [wasmStatus, setWasmStatus] = useState<'pending' | 'ready' | 'error'>('pending');
@@ -72,12 +73,7 @@ function App() {
       {/* Bottom Half */}
       <div className="flex-[4_4_0%] flex min-h-0">
         {/* Bottom Left: Project Panel */}
-        <div className="w-1/4 min-w-[250px] border-r border-[var(--color-nle-border)] bg-[var(--color-nle-panel)] flex flex-col">
-          <div className="px-3 py-1 border-b border-[var(--color-nle-border)] text-xs font-semibold bg-[#1a1a1a]">Project</div>
-          <div className="flex-1 p-3 text-[var(--color-nle-text-muted)]">
-            Media Bin
-          </div>
-        </div>
+        <ProjectPanel />
 
         {/* Bottom Right: Timeline Panel */}
         <div className="flex-1 bg-[var(--color-nle-panel)] flex flex-col">
