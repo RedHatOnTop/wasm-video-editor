@@ -50,7 +50,7 @@ Based on the `docs/PLAN.md` specification and the constraints from `AGENTS.md` (
 * **Sub-phase 4.2: Timeline UI Rendering & Interaction (Completed)**
   * **Tasks**: Render Timeline tracks visually based on Zustand state. Implement Drag-and-Drop to place clips from Project Bin onto Tracks. Implement basic snap-to-grid/snap-to-clip mechanics.
   * **Quality Gate**: User dragging an asset into the timeline creates a visual block at the exact timestamp where the mouse was released, correctly updating the Zustand tree.
-* **Sub-phase 4.3: Ripple & Rolling Edit Algorithms**
+* **Sub-phase 4.3: Ripple & Rolling Edit Algorithms (Completed)**
   * **Tasks**: Implement strict mathematical $\Delta t$ offsets for Ripple and Rolling edits. Implement the Razor (Cut) tool.
   * **Quality Gate**: Placing three clips sequentially, shortening the middle clip via a Ripple Edit automatically shifts the third clip backwards by the exact trimmed duration, maintaining frame continuity.
 
