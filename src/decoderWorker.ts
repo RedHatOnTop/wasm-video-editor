@@ -1,17 +1,24 @@
 import MP4Box, { MP4ArrayBuffer, MP4File, MP4Info, MP4Sample } from 'mp4box';
 
 export interface DecoderMessagePayload {
-  type: 'START_DECODE';
-  fileName: string;
-  id: string; // The MediaItem ID
+  type: 'START_DECODE' | 'INIT_RENDER_PORT';
+  fileName?: string;
+  id?: string; // The MediaItem ID
+  port?: MessagePort;
 }
 
-self.onmessage = async (event: MessageEvent<DecoderMessagePayload>) => {
-  const { type, fileName, id } = event.data;
+let renderPort: MessagePort | null = null;
 
-  if (type === 'START_DECODE') {
+self.onmessage = async (event: MessageEvent<DecoderMessagePayload>) => {
+  const { type, fileName, id, port } = event.data;
+
+  if (type === 'INIT_RENDER_PORT' && port) {
+    renderPort = port;
+    console.log('[Decoder Worker] Received Render Port');
+  } else if (type === 'START_DECODE' && fileName && id) {
     try {
       console.log(`[Decoder Worker] Starting decode for ${fileName} (ID: ${id})`);
+
       
       const opfsRoot = await navigator.storage.getDirectory();
       const mediaDir = await opfsRoot.getDirectoryHandle('media');
@@ -56,14 +63,18 @@ function demuxAndDecode(file: File, id: string) {
     videoDecoder = new VideoDecoder({
       output: (frame: VideoFrame) => {
         decodedFramesCount++;
-        // In a real proxy generation scenario, we'll pipe this to a VideoEncoder.
-        // For sub-phase 3.1 Quality Gate, we'll log every 30th frame to prove it's continuous.
-        if (decodedFramesCount % 30 === 0) {
-          console.log(`[Decoder Worker] Decoded ${decodedFramesCount} frames. Current timestamp: ${frame.timestamp}`);
-        }
         
-        // Always properly close the frame when not passed to another renderer
-        frame.close();
+        if (renderPort) {
+          // Send frame to render worker for drawing
+          renderPort.postMessage({ type: 'VIDEO_FRAME', frame }, [frame]);
+        } else {
+          // Log every 30th frame if not rendering
+          if (decodedFramesCount % 30 === 0) {
+            console.log(`[Decoder Worker] Decoded ${decodedFramesCount} frames. Current timestamp: ${frame.timestamp}`);
+          }
+          // Always properly close the frame when not passed to another renderer
+          frame.close();
+        }
       },
       error: (e) => {
         console.error(`[VideoDecoder error]`, e);

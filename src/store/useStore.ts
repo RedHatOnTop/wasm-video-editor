@@ -6,9 +6,16 @@ const opfsWorker = typeof window !== 'undefined'
   : null;
 
 // Initialize Decoder Worker (for Phase 3 demuxing & proxy)
-const decoderWorker = typeof window !== 'undefined'
+export const decoderWorker = typeof window !== 'undefined'
   ? new Worker(new URL('../decoderWorker.ts', import.meta.url), { type: 'module' })
   : null;
+
+// Create a direct communication channel between Decoder Worker and Render Worker
+export const renderMessageChannel = typeof window !== 'undefined' ? new MessageChannel() : null;
+
+if (decoderWorker && renderMessageChannel) {
+  decoderWorker.postMessage({ type: 'INIT_RENDER_PORT', port: renderMessageChannel.port1 }, [renderMessageChannel.port1]);
+}
 
 // Listen for OPFS Worker responses
 if (opfsWorker) {

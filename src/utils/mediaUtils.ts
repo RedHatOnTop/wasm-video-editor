@@ -1,4 +1,4 @@
-import { MediaMetadata } from '../store/useStore';
+import type { MediaMetadata } from '../store/useStore';
 
 export const extractMetadata = (file: File): Promise<MediaMetadata> => {
   return new Promise((resolve, reject) => {

@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { renderMessageChannel } from '../store/useStore';
 
 export default function ProgramMonitor() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -24,7 +25,15 @@ export default function ProgramMonitor() {
       }
     };
 
-    workerRef.current.postMessage({ type: 'INIT_CANVAS', canvas: offscreen }, [offscreen]);
+workerRef.current.postMessage({ type: 'INIT_CANVAS', canvas: offscreen }, [offscreen]);   
+
+    // Pass the message port to the Render Worker so it can receive VideoFrames directly from Decoder Worker
+    if (renderMessageChannel) {
+      workerRef.current.postMessage(
+        { type: 'INIT_DECODER_PORT', port: renderMessageChannel.port2 }, 
+        [renderMessageChannel.port2]
+      );
+    }
 
     return () => {
       workerRef.current?.terminate();
