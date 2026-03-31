@@ -1,8 +1,13 @@
 import { create } from 'zustand';
 
 // Initialize OPFS Worker
-const opfsWorker = typeof window !== 'undefined' 
-  ? new Worker(new URL('../opfsWorker.ts', import.meta.url), { type: 'module' }) 
+const opfsWorker = typeof window !== 'undefined'
+  ? new Worker(new URL('../opfsWorker.ts', import.meta.url), { type: 'module' })
+  : null;
+
+// Initialize Decoder Worker (for Phase 3 demuxing & proxy)
+const decoderWorker = typeof window !== 'undefined'
+  ? new Worker(new URL('../decoderWorker.ts', import.meta.url), { type: 'module' })
   : null;
 
 // Listen for OPFS Worker responses
@@ -85,8 +90,22 @@ export const useStore = create<ProjectState>((set) => ({
     })),
   generateProxy: (id) =>
     set((state) => {
-      // Skeleton function for WebCodecs Proxy routing
+      const media = state.mediaPool.find((m) => m.id === id);
+      if (!media || !media.opfsFileName) {
+        console.error('Cannot generate proxy: Media missing OPFS file name.');
+        return state;
+      }
+
       console.log(`[Proxy generation started] Routing media ${id} to WebCodecs Decoder...`);
+      
+      if (decoderWorker) {
+        decoderWorker.postMessage({
+          type: 'START_DECODE',
+          id: id,
+          fileName: media.opfsFileName
+        });
+      }
+
       return {
         mediaPool: state.mediaPool.map((m) =>
           m.id === id ? { ...m, proxyStatus: 'generating' } : m
