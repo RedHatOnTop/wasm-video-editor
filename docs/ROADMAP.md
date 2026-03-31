@@ -21,10 +21,10 @@ Based on the `docs/PLAN.md` specification and the constraints from `AGENTS.md` (
 * **Sub-phase 2.1: Drag & Drop UI & Core React State (Completed)**
   * **Tasks**: Implement file drop zone in the Project Bin component. Map dropped `File` objects to the Zustand MediaPool state.
   * **Quality Gate**: Dropping a file updates the Zustand state and reflects the filename visually in the Project Bin UI.
-* **Sub-phase 2.2: OPFS Storage Pipeline (In Progress)**
+* **Sub-phase 2.2: OPFS Storage Pipeline (Completed)**
   * **Tasks**: Create OPFS directory structure. Implement `FileSystemSyncAccessHandle` inside a Web Worker to stream file buffers into persistent browser storage.
   * **Quality Gate**: Dropping a video file >100MB successfully streams it to OPFS within seconds without freezing the UI.
-* **Sub-phase 2.3: Metadata Extraction & Proxy Generation Routing**
+* **Sub-phase 2.3: Metadata Extraction & Proxy Generation Routing (In Progress)**
   * **Tasks**: Parse basic video metadata (duration, width, height) utilizing lightweight techniques. Establish the skeleton function that will route this media into the WebCodecs decoder for proxy generation.
   * **Quality Gate**: UI correctly displays the resolution and duration of the imported OPFS file, and the proxy toggle button triggers a status change event without failing.
 
