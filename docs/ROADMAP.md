@@ -18,7 +18,7 @@ Based on the `docs/PLAN.md` specification and the constraints from `AGENTS.md` (
 ## Phase 2: Media Ingestion, OPFS & Proxy Workflow
 **Goal**: Safely import large video files into browser storage, extract basic metadata, and prepare proxy structure.
 
-* **Sub-phase 2.1: Drag & Drop UI & Core React State**
+* **Sub-phase 2.1: Drag & Drop UI & Core React State (Completed)**
   * **Tasks**: Implement file drop zone in the Project Bin component. Map dropped `File` objects to the Zustand MediaPool state.
   * **Quality Gate**: Dropping a file updates the Zustand state and reflects the filename visually in the Project Bin UI.
 * **Sub-phase 2.2: OPFS Storage Pipeline**
