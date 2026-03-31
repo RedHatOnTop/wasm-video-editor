@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+@theme {
+  --color-nle-bg: #1e1e1e;
+  --color-nle-panel: #252526;
+  --color-nle-border: #3c3c3c;
+  --color-nle-accent: #007acc;
+  --color-nle-accent-hover: #0098ff;
+  --color-nle-text: #cccccc;
+  --color-nle-text-muted: #858585;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--color-nle-bg);
+  color: var(--color-nle-text);
+  overflow: hidden;
+}
