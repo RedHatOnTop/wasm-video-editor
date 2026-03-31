@@ -44,7 +44,7 @@ Based on the `docs/PLAN.md` specification and the constraints from `AGENTS.md` (
 ## Phase 4: State-Driven Timeline & Mathematical Edit Logic
 **Goal**: Build the interactive Timeline UI and integrate advanced non-destructive mathematical editing logic.
 
-* **Sub-phase 4.1: Timeline Data Architecture**
+* **Sub-phase 4.1: Timeline Data Architecture (Completed)**
   * **Tasks**: Implement the JSON graph state in Zustand (`Project` -> `Sequences` -> `Tracks` -> `Clips`). Add parameters for `trimIn`, `trimOut`, and `trackStart`.
   * **Quality Gate**: Console logging the Zustand state reveals a perfectly nested data structure capable of supporting multiple tracks and clips.
 * **Sub-phase 4.2: Timeline UI Rendering & Interaction**
@@ -66,3 +66,13 @@ Based on the `docs/PLAN.md` specification and the constraints from `AGENTS.md` (
 * **Sub-phase 5.3: WebM/MP4 Muxing & File Download**
   * **Tasks**: Mux the output chunks from the VideoEncoder and AudioEncoder into a playable container format and trigger a browser download via Blob URL.
   * **Quality Gate**: The downloaded output file plays cleanly in a desktop OS media player (e.g., VLC, QuickTime), faithfully representing the timeline edits, contrast adjustments, and audio levels.
+
+## Phase 6: Advanced UI Overhaul & UX Polish (Backlog/Future)
+**Goal**: Overhaul the application shell to incorporate a scalable Windows-style Ribbon Menu explicitly designed for managing complex NLE features.
+
+* **Sub-phase 6.1: Ribbon Architecture & Component Development**
+  * **Tasks**: Replace simple header panels with a fully tabbed Windows Office-style Ribbon interface. Organize tools (Edit, Color, Audio, Export) into logical ribbons.
+  * **Quality Gate**: Users can smoothly switch between Ribbon tabs, and UI elements properly scale without breaking the 4-panel grid monitor layout.
+* **Sub-phase 6.2: Contextual Tool Activation**
+  * **Tasks**: Bind Zustand state to the Ribbon Menu, conditionally enabling/disabling formatting tabs based on the active Timeline selection (e.g., showing 'Video Effects' only when a video clip is active).
+  * **Quality Gate**: Selecting an audio clip dynamically displays the Audio Tools ribbon, perfectly syncing with global editor state.

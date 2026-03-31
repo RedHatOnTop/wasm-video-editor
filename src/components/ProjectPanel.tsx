@@ -48,7 +48,7 @@ export default function ProjectPanel() {
         }
       });
     },
-    [addMedia]
+    [addMedia, updateMediaMetadata]
   );
 
   return (
@@ -57,7 +57,7 @@ export default function ProjectPanel() {
         Project Bin
       </div>
       <div
-        className={"flex-1 p-3 overflow-y-auto transition-colors duration-200 "}
+        className={"flex-1 p-3 overflow-y-auto transition-colors duration-200 " + (isDragging ? "bg-[#2d2d30]" : "")}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
@@ -71,7 +71,11 @@ export default function ProjectPanel() {
             {mediaPool.map((item) => (
               <li
                 key={item.id}
-                className="text-xs p-2 bg-[#2d2d30] border border-[var(--color-nle-border)] rounded flex justify-between items-center cursor-pointer hover:bg-[#3d3d40]"
+                draggable
+                onDragStart={(e) => {
+                  e.dataTransfer.setData('text/plain', JSON.stringify({ type: 'MEDIA_ITEM', id: item.id }));
+                }}
+                className="text-xs p-2 bg-[#2d2d30] border border-[var(--color-nle-border)] rounded flex justify-between items-center cursor-pointer hover:bg-[#3d3d40] active:cursor-grabbing"
               >
                 <div className="flex flex-col flex-1 overflow-hidden">
                   <span className="truncate font-medium" title={item.name}>
