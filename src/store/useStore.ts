@@ -79,6 +79,20 @@ export interface VideoProject {
   sequences: Sequence[];
 }
 
+export interface ProjectState {
+  mediaPool: MediaItem[];
+  project: VideoProject;
+  activeSequenceId: string | null;
+  addMedia: (item: MediaItem) => void;
+  removeMedia: (id: string) => void;
+  updateMediaStatus: (id: string, status: MediaItem['status'], opfsFileName?: string) => void;
+  updateMediaMetadata: (id: string, metadata: MediaMetadata) => void;
+  generateProxy: (id: string) => void;
+  addClipToTrack: (sequenceId: string, trackId: string, clip: Clip) => void;    
+  updateTrackClips: (sequenceId: string, trackId: string, clips: Clip[]) => void;
+  debugLogTimelineState: () => void;
+}
+
 const defaultSequence: Sequence = {
   id: 'seq-1',
   name: 'Sequence 01',
@@ -183,7 +197,26 @@ export const useStore = create<ProjectState>((set, get) => ({
       };
     }),
 
+  updateTrackClips: (sequenceId, trackId, clips) =>
+    set((state) => {
+      const parentSeqIndex = state.project.sequences.findIndex(s => s.id === sequenceId);
+      if (parentSeqIndex === -1) return state;
+
+      const trackIndex = state.project.sequences[parentSeqIndex].tracks.findIndex(t => t.id === trackId);
+      if (trackIndex === -1) return state;
+
+      const newSequences = [...state.project.sequences];
+      const newTracks = [...newSequences[parentSeqIndex].tracks];
+
+      newTracks[trackIndex] = { ...newTracks[trackIndex], clips };
+      newSequences[parentSeqIndex] = { ...newSequences[parentSeqIndex], tracks: newTracks };
+
+      return {
+        project: { ...state.project, sequences: newSequences }
+      };
+    }),
   debugLogTimelineState: () => {
-    console.log('[Quality Gate 4.1] Zustand Timeline State:', get().project);
+    console.log('[Quality Gate 4.1] Zustand Timeline State:', get().project);   
   }
 }));
+
