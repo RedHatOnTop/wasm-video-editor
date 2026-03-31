@@ -31,10 +31,10 @@ Based on the `docs/PLAN.md` specification and the constraints from `AGENTS.md` (
 ## Phase 3: Decoupled Playback Engine & 32-bit Render Pipeline
 **Goal**: Create the foundation for the Program Monitor playback and core rendering logic using 32-bit floating-point WebGL.
 
-* **Sub-phase 3.1: WebCodecs Demuxing & Decoding (In Progress)**
+* **Sub-phase 3.1: WebCodecs Demuxing & Decoding (Completed)**
   * **Tasks**: Read streams from OPFS. Implement an MP4/WebM demuxer (e.g., MP4Box.js or Rust-based). Pass encoded chunks to `WebCodecs VideoDecoder`.
   * **Quality Gate**: VideoDecoder successfully emits raw `VideoFrame` objects continuously from the OPFS media file.
-* **Sub-phase 3.2: 32-bit WebGL & OffscreenCanvas Setup**
+* **Sub-phase 3.2: 32-bit WebGL & OffscreenCanvas Setup (In Progress)**
   * **Tasks**: Transfer an `OffscreenCanvas` from the Program Monitor React component to the Render Worker. Initialize a WebGL 2.0 context explicitly requiring half-float or float texture extensions.
   * **Quality Gate**: WebGL shader successfully clears the OffscreenCanvas to a specific test color triggered by a UI button.
 * **Sub-phase 3.3: Frame Rendering & Playback Loop**
